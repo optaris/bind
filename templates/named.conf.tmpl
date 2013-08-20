@@ -1,0 +1,47 @@
+// vim: ft=named
+// this server is named {{ host.name }} and listens to {{ host.ip }}
+
+options
+{
+    /* make named use port 53 for the source of all queries, to allow
+     * firewalls to block all ports except 53:
+     */
+    listen-on-v6 { any; };
+    listen-on { 127.0.0.1;  {{ host.ip | cm("server_ip", "host") }}; };
+    directory "/var/named";
+
+    transfer-source {{ host.ip | cm("server_ip", "host") }};
+    allow-transfer { dns_servers; };
+
+    allow-query { any; };
+    allow-recursion { any; };
+    recursion yes;
+};
+
+controls {
+    inet 127.0.0.1 allow {localhost;};
+};
+
+acl "dns_servers" {
+    {% for server in "dns::DnsServer" | get %}{{ server.host.ip | cm("other_server_ip", "net ref") }};
+    {% endfor %}
+};
+
+// Slave zones
+{% for slave_zone in slave_zones %}zone "{{ slave_zone | dns::bind_zone_name | cm("slave_zone_name", "net")  }}" IN {
+    type slave;
+    file "zones/slaves/{{ slave_zone | dns::bind_zone_name | cm("slave_zone_name", "host ref") }}.db";
+    masters {
+        {% for master in slave_zone.master %}{{ master.host.ip }};
+    {% endfor %}};
+    transfer-source {{ host.ip }};
+    notify no;
+};
+{% endfor %}
+
+// Master zones
+{% for master_zone in master_zones %}zone "{{ master_zone | dns::bind_zone_name | cm("master_zone_name", "net") }}" IN {
+    type master;
+    file "zones/master/{{ master_zone | dns::bind_zone_name | cm("master_zone_name", "host ref") }}.db";
+};
+{% endfor %}
