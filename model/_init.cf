@@ -23,7 +23,7 @@ entity ZoneFile extends std::File:
     dns::Zone zone
 end
 
-implementation zoneFile:
+implementation zoneFile for ZoneFile:
     zonename = dns::bind_zone_name(zone)
     self.path = "/var/named/chroot/var/named/zones/master/{{ zonename }}.db"
     self.content = template("bind/zonefile.tmpl")
@@ -35,7 +35,7 @@ implementation zoneFile:
 end
 
 
-implementation bindDnsServer:
+implementation bindDnsServer for dns::DnsServer:
     bind_pkg = std::Package(host = host, name = "bind-chroot", state = "installed")
     bind_svc = std::Service(host = host, name = "named-chroot", state = "running", onboot = true)
 
