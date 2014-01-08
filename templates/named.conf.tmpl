@@ -1,5 +1,5 @@
 // vim: ft=named
-// this server is named {{ host.name }} and listens to {{ host.ip }}
+// this server is named {{ host.name | cm("hostname", "host ref") }} and listens to {{ host.ip | cm("host ip", "host ref")  }}
 
 options
 {
@@ -32,9 +32,9 @@ acl "dns_servers" {
     type slave;
     file "zones/slaves/{{ slave_zone | dns::bind_zone_name | cm("slave_zone_name", "host ref") }}.db";
     masters {
-        {% for master in slave_zone.master %}{{ master.host.ip }};
+        {% for master in slave_zone.master %}{{ master.host.ip | cm("master ip", "net ref")  }};
     {% endfor %}};
-    transfer-source {{ host.ip }};
+    transfer-source {{ host.ip | cm("host ip", "host ref")  }};
     notify no;
 };
 {% endfor %}
