@@ -48,6 +48,11 @@ implementation bindDnsServer for dns::DnsServer:
     config_file.requires = bind_pkg
 
     bind_svc.requires = [bind_pkg, config_file]
+
+    std::Directory(host = host, path = "/var/named/chroot/var/named/zones", owner = "root",
+        group = "root", mode = 755)
+    std::Directory(host = host, path = "/var/named/chroot/var/named/zones/master", owner = "root",
+        group = "root", mode = 755)
 end
 
 
