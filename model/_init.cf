@@ -27,7 +27,6 @@ implementation zoneFile for ZoneFile:
     zonename = dns::bind_zone_name(zone)
     self.path = "/var/named/chroot/var/named/zones/master/{{ zonename }}.db"
     self.content = template("bind/zonefile.tmpl")
-    self.provides = bind_svc
     
     self.mode = 644
     self.owner = "root"
@@ -40,7 +39,7 @@ implementation bindDnsServer for dns::DnsServer:
     bind_svc = std::Service(host = host, name = "named-chroot", state = "running", onboot = true)
 
     for zone in master_zones:
-        ZoneFile(host = host, zone = zone, reload = true)
+        ZoneFile(host = host, zone = zone, reload = true, provides = bind_svc)
     end
 
     config_file = std::ConfigFile(host = host, path = "/var/named/chroot/etc/named.conf",
@@ -58,3 +57,4 @@ end
 
 implement ZoneFile using zoneFile
 implement dns::DnsServer using bindDnsServer
+
