@@ -1,5 +1,5 @@
 // vim: ft=named
-// this server is named {{ host.name | std.cm("hostname", "host ref") }} and listens to {{ host.ip | std.cm("host ip", "host ref")  }}
+// this server is named {{ host.name }} and listens to {{ host.ip }}
 
 options
 {
@@ -7,14 +7,14 @@ options
      * firewalls to block all ports except 53:
      */
     listen-on-v6 { any; };
-    listen-on { 127.0.0.1;  {{ host.ip | std.cm("server_ip", "host") }}; };
+    listen-on { 127.0.0.1;  {{ host.ip }}; };
     directory "/var/named";
 
-    transfer-source {{ host.ip | std.cm("server_ip", "host") }};
+    transfer-source {{ host.ip }};
     allow-transfer { dns_servers; };
 
     allow-query { any; };
-    allow-recursion { any; };
+    allow-recursion { localhost; };
     recursion yes;
 };
 
@@ -23,25 +23,30 @@ controls {
 };
 
 acl "dns_servers" {
-    {% for server in "dns::DnsServer" | std.get %}{{ server.host.ip | std.cm("other_server_ip", "net ref") }};
+    127.0.0.1;
+    ::1;
+    {% for server in axfr_allowed | std.split(" ") %}{{ server }};
     {% endfor %}
 };
 
 // Slave zones
-{% for slave_zone in slave_zones %}zone "{{ slave_zone | dns.bind_zone_name | std.cm("slave_zone_name", "net")  }}" IN {
+{% for slave_zone in slave_zones %}zone "{{ slave_zone.domain }}" IN {
     type slave;
-    file "zones/slaves/{{ slave_zone | dns.bind_zone_name | std.cm("slave_zone_name", "host ref") }}.db";
+    file "slaves/{{ slave_zone.domain }}.db";
     masters {
-        {% for master in slave_zone.master %}{{ master.host.ip | std.cm("master ip", "net ref")  }};
-    {% endfor %}};
-    transfer-source {{ host.ip | std.cm("host ip", "host ref")  }};
+        {{ slave_zone.master.host.ip }};
+    };
+    transfer-source {{ host.ip }};
     notify no;
 };
 {% endfor %}
 
 // Master zones
-{% for master_zone in master_zones %}zone "{{ master_zone | dns.bind_zone_name | std.cm("master_zone_name", "net") }}" IN {
+{% for master_zone in master_zones %}zone "{{ master_zone.domain }}" IN {
     type master;
-    file "zones/master/{{ master_zone | dns.bind_zone_name | std.cm("master_zone_name", "host ref") }}.db";
+    file "master/{{ master_zone.domain }}.db";
 };
 {% endfor %}
+
+// additional config
+{{ additional_config }}

@@ -15,45 +15,40 @@
 
     Contact: bart@impera.io
 """
-entity ZoneFile extends std::File:
-    """
-        A bind zonefile
-    """
-    dns::Zone zone
+
+implementation zoneFile for dns::Zone:
+    r_pk = std::Package[host=master.host, name="bind-chroot"]
+    r_sv = std::Service[host=master.host, name="named-chroot"]
+    dir = std::Directory[host=master.host, path="/var/named/chroot/var/named/master"]
+    zone_content = std::template("bind/zonefile.tmpl")
+    std::ConfigFile(host=master.host, content=bind::serial(domain, zone_content),
+                    path="/var/named/chroot/var/named/master/{{ domain }}.db",
+                    mode=644, owner="root", group="root", requires=dir, provides=r_sv)
 end
 
-implementation zoneFile for ZoneFile:
-    zonename = dns::bind_zone_name(zone)
-    self.path = "/var/named/chroot/var/named/zones/master/{{ zonename }}.db"
-    self.content = std::template("bind/zonefile.tmpl")
-    
-    self.mode = 644
-    self.owner = "root"
-    self.group = "root"    
+entity Server extends dns::Server:
+    string axfr_allowed
+    string additional_config=""
 end
 
+implementation bindDnsServer for Server:
+    bind_pkg = std::Package(host=host, name="bind-chroot", state="installed")
+    std::Package(host=host, name="bind-utils", state="installed")
+    bind_svc = std::Service(host=host, name="named-chroot", state="running", onboot=true)
 
-implementation bindDnsServer for dns::DnsServer:
-    bind_pkg = std::Package(host = host, name = "bind-chroot", state = "installed")
-    bind_svc = std::Service(host = host, name = "named-chroot", state = "running", onboot = true)
-
-    for zone in master_zones:
-        ZoneFile(host = host, zone = zone, reload = true, provides = bind_svc)
-    end
-
-    config_file = std::ConfigFile(host = host, path = "/var/named/chroot/etc/named.conf",
-        content = std::template("bind/named.conf.tmpl"))
+    config_file = std::ConfigFile(host=host, path="/var/named/chroot/etc/named.conf",
+                                  content=std::template("bind/named.conf.tmpl"))
     config_file.requires = bind_pkg
 
     bind_svc.requires = [bind_pkg, config_file]
 
-    std::Directory(host = host, path = "/var/named/chroot/var/named/zones", owner = "root",
-        group = "root", mode = 755)
-    std::Directory(host = host, path = "/var/named/chroot/var/named/zones/master", owner = "root",
-        group = "root", mode = 755)
+    d_master = std::Directory(host=host, path="/var/named/chroot/var/named/master", owner="root",
+                   group="named", mode=755, requires=bind_pkg)
+    d_slave = std::Directory(host=host, path="/var/named/chroot/var/named/slaves", owner="named",
+                   group="named", mode=755, requires=bind_pkg)
 end
 
 
-implement ZoneFile using zoneFile
-implement dns::DnsServer using bindDnsServer
+implement dns::Zone using zoneFile
+implement Server using bindDnsServer
 
