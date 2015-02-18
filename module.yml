@@ -1,7 +1,8 @@
 author: Bart Vanbrabant <bart@impera.io>
 license: Apache 2.0
 name: bind
-requires: {dns: 'git@github.com:bartv/imp-dns, ">= 0.1"', std: 'git@github.com:bartv/imp-std,
-    ">= 0.1"'}
-source: git@github.com:bartv/imp-bind
-version: 0.1.1
+source: git@git.impera.io:modules/imp-bind
+version: 0.1.3
+requires: 
+    dns: git@git.impera.io:modules/imp-dns, ">= 0.1"
+    std: git@git.impera.io:modules/imp-std, ">= 0.1"
