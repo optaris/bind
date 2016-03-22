@@ -14,7 +14,7 @@ options
     allow-transfer { dns_servers; };
 
     allow-query { any; };
-    allow-recursion { localhost; };
+    allow-recursion { localhost; {{ allow_recursion }}; };
     recursion yes;
 };
 

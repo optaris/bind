@@ -27,7 +27,7 @@ implementation zoneFile for dns::Zone:
 end
 
 entity Server extends dns::Server:
-    string axfr_allowed
+    string axfr_allowed=""
     string additional_config=""
 end
 
