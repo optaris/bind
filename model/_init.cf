@@ -46,6 +46,8 @@ implementation bindDnsServer for Server:
                    group="named", mode=755, requires=bind_pkg)
     d_slave = std::Directory(host=host, path="/var/named/chroot/var/named/slaves", owner="named",
                    group="named", mode=755, requires=bind_pkg)
+
+    self.ipaddress = host.ip
 end
 
 

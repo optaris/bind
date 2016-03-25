@@ -34,7 +34,7 @@ acl "dns_servers" {
     type slave;
     file "slaves/{{ slave_zone.domain }}.db";
     masters {
-        {{ slave_zone.master.host.ip }};
+        {{ slave_zone.master.ipaddress }};
     };
     transfer-source {{ host.ip }};
     notify no;
