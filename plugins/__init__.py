@@ -1,5 +1,5 @@
 """
-    Copyright 2015 Impera
+    Copyright 2016 Inmanta
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 
-    Contact: bart@impera.io
+    Contact: bart@inmanta.com
 """
 
 import os
@@ -40,7 +40,7 @@ def serial(context: Context, zone: "string", zonefile: "string") -> "string":
 
         :param zone: The name of the zone to check
         :param zonefile: The actual zone file. This is a complete and valid zonefile with __SERIAL__
-                         in it as placeholder. This placeholder is replaced with the current 
+                         in it as placeholder. This placeholder is replaced with the current
                          serial.
     """
     data_dir = context.get_data_dir()

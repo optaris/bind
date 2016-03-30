@@ -7,7 +7,7 @@ options
      * firewalls to block all ports except 53:
      */
     listen-on-v6 { any; };
-    listen-on { 127.0.0.1;  {{ host.ip }}; };
+    listen-on { any; };
     directory "/var/named";
 
     transfer-source {{ host.ip }};

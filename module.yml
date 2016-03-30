@@ -1,8 +1,8 @@
-author: Bart Vanbrabant <bart@impera.io>
+author: Bart Vanbrabant <bart@inmanta.com>
 license: Apache 2.0
 name: bind
-source: git@git.impera.io:modules/bind
+source: git@git.inmanta.com:modules/bind
 version: 0.1.4
 requires: 
-    dns: git@git.impera.io:modules/dns, ">= 0.1"
-    std: git@git.impera.io:modules/std, ">= 0.1"
+    dns: git@git.inmanta.com:modules/dns, master
+    ip: git@git.inmanta.com:modules/ip, master
