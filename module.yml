@@ -2,7 +2,7 @@ author: Bart Vanbrabant <bart@inmanta.com>
 license: Apache 2.0
 name: bind
 source: git@git.inmanta.com:modules/bind
-version: 0.1.4
+version: 0.2b1
 requires: 
     dns: git@git.inmanta.com:modules/dns, master
     ip: git@git.inmanta.com:modules/ip, master
