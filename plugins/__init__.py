@@ -20,7 +20,7 @@ import os
 import datetime
 import hashlib
 
-from impera.plugins.base import plugin, Context
+from impera.plugins import plugin, Context
 
 @plugin
 def nameservers(master_zones: "list", slave_zones: "list" = []) -> "list":
