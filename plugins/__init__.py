@@ -13,14 +13,14 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 
-    Contact: bart@inmanta.com
+    Contact: code@inmanta.com
 """
 
 import os
 import datetime
 import hashlib
 
-from impera.plugins import plugin, Context
+from inmanta.plugins import plugin, Context
 
 @plugin
 def nameservers(master_zones: "list", slave_zones: "list" = []) -> "list":

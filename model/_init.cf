@@ -15,6 +15,8 @@
 
     Contact: bart@inmanta.io
 """
+import dns
+import ip
 
 implementation zoneFile for dns::Zone:
     r_pk = std::Package[host=master.host, name="bind-chroot"]
