@@ -15,6 +15,8 @@ options
 
     allow-query { any; };
     allow-recursion { localhost; {{ allow_recursion }}; };
+{% if forwarders != "" %}    forwarders { {% for fwd in forwarders | std.split(" ") %}{{ fwd }}; {% endfor %} };
+{% endif %}
     recursion yes;
 };
 
