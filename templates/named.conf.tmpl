@@ -8,7 +8,7 @@ options
      */
     listen-on-v6 { any; };
     listen-on { any; };
-    directory "/var/named";
+    directory "{{ work_dir }}";
 
     transfer-source {{ host.ip }};
     allow-transfer { dns_servers; };

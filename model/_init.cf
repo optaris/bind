@@ -17,26 +17,37 @@
 """
 import dns
 import ip
+import exec
 
 implementation zoneFile for dns::Zone:
-    r_pk = std::Package[host=master.host, name="bind-chroot"]
-    r_sv = std::Service[host=master.host, name="named-chroot"]
-    dir = std::Directory[host=master.host, path="/var/named/chroot/var/named/master"]
+    r_pk = std::Package[host=master.host, name=master._pkg_name]
+    r_sv = std::Service[host=master.host, name=master._svc_name]
+    rndc = exec::Run[host=master.host, command="/usr/sbin/rndc reload"]
+    dir = std::Directory[host=master.host, path="{{master._zone_dir}}/master"]
     zone_content = std::template("bind/zonefile.tmpl")
     std::ConfigFile(host=master.host, content=bind::serial(domain, zone_content),
-                    path="/var/named/chroot/var/named/master/{{ domain }}.db",
-                    mode=644, owner="root", group="root", requires=dir, provides=r_sv)
+                    path="{{master._zone_dir}}/master/{{ domain }}.db",
+                    mode=644, requires=dir, provides=[r_sv, rndc])
 end
 
 entity Server extends dns::Server:
     string axfr_allowed=""
     string additional_config=""
+    string _zone_dir
+    string _pkg_name
+    string _svc_name
+    string work_dir
 end
 
 implementation bindDnsServer for Server:
-    bind_pkg = std::Package(host=host, name="bind-chroot", state="installed")
+    self._zone_dir = "/var/named/chroot/var/named"
+    self._pkg_name = "bind-chroot"
+    self._svc_name = "named-chroot"
+    self.work_dir = "/var/named"
+
+    bind_pkg = std::Package(host=host, name=self._pkg_name, state="installed")
     std::Package(host=host, name="bind-utils", state="installed")
-    bind_svc = std::Service(host=host, name="named-chroot", state="running", onboot=true)
+    bind_svc = std::Service(host=host, name=self._svc_name, state="running", onboot=true)
 
     config_file = std::ConfigFile(host=host, path="/var/named/chroot/etc/named.conf",
                                   content=std::template("bind/named.conf.tmpl"))
@@ -44,15 +55,38 @@ implementation bindDnsServer for Server:
 
     bind_svc.requires = [bind_pkg, config_file]
 
-    d_master = std::Directory(host=host, path="/var/named/chroot/var/named/master", owner="root",
+    d_master = std::Directory(host=host, path="{{_zone_dir}}/master", owner="root",
                    group="named", mode=755, requires=bind_pkg)
-    d_slave = std::Directory(host=host, path="/var/named/chroot/var/named/slaves", owner="named",
+    d_slave = std::Directory(host=host, path="{{_zone_dir}}/slaves", owner="named",
                    group="named", mode=755, requires=bind_pkg)
 
     self.ipaddress = host.ip
 end
 
+implementation bindUbuntu for Server:
+    self._zone_dir = "/etc/bind"
+    self._pkg_name = "bind9"
+    self._svc_name = "bind9"
+    self.work_dir = "/etc/bind"
+
+    p_bind = std::Package(host=host, name=self._pkg_name, state="installed")
+    s_bind = std::Service(host=host, name=self._svc_name, state="running", onboot=true, requires=config_file)
+
+    config_file = std::ConfigFile(host=host, path="/etc/bind/named.conf", requires=p_bind, reload=true,
+                                  content=std::template("bind/named.conf.tmpl"))
+
+    d_master = std::Directory(host=host, path="{{_zone_dir}}/master", owner="root",
+                              group="bind", mode=755, requires=p_bind)
+    d_slave = std::Directory(host=host, path="{{_zone_dir}}/slaves", owner="bind",
+                             group="bind", mode=755, requires=p_bind)
+
+    self.ipaddress = host.ip
+
+    exec::Run(host=host, command="/usr/sbin/rndc reload", requires=config_file)
+end
+
 
 implement dns::Zone using zoneFile
-implement Server using bindDnsServer
+implement Server using bindDnsServer when std::familyof(host.os, "redhat")
+implement Server using bindUbuntu when std::familyof(host.os, "ubuntu")
 
