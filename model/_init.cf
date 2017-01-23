@@ -61,6 +61,8 @@ implementation bindDnsServer for Server:
                    group="named", mode=755, requires=bind_pkg)
 
     self.ipaddress = host.ip
+
+    exec::Run(host=host, command="/usr/sbin/rndc reload", requires=config_file)
 end
 
 implementation bindUbuntu for Server:
@@ -89,4 +91,3 @@ end
 implement dns::Zone using zoneFile
 implement Server using bindDnsServer when std::familyof(host.os, "redhat")
 implement Server using bindUbuntu when std::familyof(host.os, "ubuntu")
-
