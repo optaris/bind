@@ -25,10 +25,18 @@ implementation zoneFile for dns::Zone:
     rndc = exec::Run[host=master.host, command="/usr/sbin/rndc reload"]
     dir = std::Directory[host=master.host, path="{{master._zone_dir}}/master"]
     zone_content = std::template("bind/zonefile.tmpl")
-    std::ConfigFile(host=master.host, content=bind::serial(domain, zone_content),
-                    path="{{master._zone_dir}}/master/{{ domain }}.db",
-                    mode=644, requires=dir, provides=[r_sv, rndc])
+    self.zone_file = std::ConfigFile(host=master.host, content=bind::serial(domain, zone_content),
+                                     path="{{master._zone_dir}}/master/{{ domain }}.db",
+                                     mode=644, requires=dir, provides=[r_sv, rndc])
 end
+
+dns::Zone.zone_file [1] -- std::ConfigFile
+
+implementation record for dns::ResourceRecord:
+    self.zone.zone_file.suffix_content = std::Content(value=std::template("bind/record.j2"))
+end
+
+implement dns::ResourceRecord using record
 
 entity Server extends dns::Server:
     string axfr_allowed=""

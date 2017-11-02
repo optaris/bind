@@ -1,7 +1,7 @@
 author: Inmanta <code@inmanta.com>
 license: Apache 2.0
 name: bind
-version: '0.4'
+version: '0.5.0'
 requires:
-- dns
-- ip
+- dns>=0.2
+- std>=0.18
