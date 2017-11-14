@@ -27,7 +27,7 @@ controls {
 acl "dns_servers" {
     127.0.0.1;
     ::1;
-    {% for server in axfr_allowed | std.split(" ") %}{{ server }};
+    {% for server in axfr_allowed %}{{ server }};
     {% endfor %}
 };
 

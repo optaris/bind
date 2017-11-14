@@ -39,7 +39,7 @@ end
 implement dns::ResourceRecord using record
 
 entity Server extends dns::Server:
-    string axfr_allowed=""
+    string[] axfr_allowed=[]
     string additional_config=""
     string _zone_dir
     string _pkg_name

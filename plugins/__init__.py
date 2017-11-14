@@ -62,7 +62,7 @@ def serial(context: Context, zone: "string", zonefile: "string") -> "string":
         old_sum = serials[zone][0]
         serial = serials[zone][1]
 
-    if old_sum != md5sum: # this happens in case of a new file and updated file
+    if old_sum != md5sum or True: # this happens in case of a new file and updated file
         serial = datetime.datetime.utcnow().strftime("%s")
         serials[zone] = (md5sum, serial)
 
